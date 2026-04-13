@@ -2,15 +2,15 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// ⚠️  Replace these values with your actual Firebase project config.
-// Go to Firebase Console → Project Settings → Your Apps → Web App config.
+// Firebase config is loaded from environment variables.
+// Copy .env.example to .env and fill in your values.
 const firebaseConfig = {
-  apiKey: 'REDACTED_API_KEY',
-  authDomain: 'REDACTED_AUTH_DOMAIN',
-  projectId: 'REDACTED_PROJECT_ID',
-  storageBucket: 'REDACTED_PROJECT_ID.firebasestorage.app',
-  messagingSenderId: 'REDACTED_SENDER_ID',
-  appId: '1:REDACTED_SENDER_ID:web:a085a3f0c3067db5950285',
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
