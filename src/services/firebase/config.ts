@@ -15,8 +15,7 @@ const firebaseConfig = {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Auth is initialized with default persistence.
-// Session is also persisted locally via SQLite (see db.ts + authStore.ts).
+// Session is persisted locally via AsyncStorage in authStore.ts.
 export const auth = getAuth(app);
 
 export const db = getFirestore(app);

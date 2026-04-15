@@ -1,0 +1,100 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // Helper functions
+    // -------------------------------------------------------------------------
+
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    /** Read the caller's own profile from users/{uid}. Costs 1 extra read. */
+    function callerProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function callerRole() {
+      return callerProfile().role;
+    }
+
+    /** The ownerId the caller belongs to (admin = own uid, staff = admin uid). */
+    function callerOwnerId() {
+      return callerProfile().ownerId;
+    }
+
+    function isAdmin() {
+      return isAuthed() && callerRole() == 'admin';
+    }
+
+    /** True when the caller belongs to the same tenant as adminUid. */
+    function sameOrg(adminUid) {
+      return isAuthed() && callerOwnerId() == adminUid;
+    }
+
+    // -------------------------------------------------------------------------
+    // users/{uid}
+    // -------------------------------------------------------------------------
+    // Stored fields: email, displayName, role, ownerId, createdAt, createdBy
+
+    match /users/{userId} {
+
+      // Any authenticated user can read their own profile.
+      allow read: if isAuthed() && request.auth.uid == userId;
+
+      // Admin can read profiles of their staff (ownerId points to them).
+      allow read: if isAdmin()
+                  && resource.data.ownerId == request.auth.uid;
+
+      // Self-registration: a user can create their own profile during sign-up.
+      // The doc must carry role=="admin" and ownerId==uid (enforced client-side
+      // in signUpAdmin(); double-checked here).
+      allow create: if isAuthed()
+                    && request.auth.uid == userId
+                    && request.resource.data.role == 'admin'
+                    && request.resource.data.ownerId == request.auth.uid;
+
+      // Admin can create a staff profile doc (written while admin is auth'd,
+      // immediately after the secondary-app Auth user is created).
+      // The doc must declare role=="staff" and ownerId==admin's uid.
+      allow create: if isAdmin()
+                    && request.resource.data.role == 'staff'
+                    && request.resource.data.ownerId == request.auth.uid;
+
+      // Users can update their own profile (display name, etc.).
+      allow update: if isAuthed() && request.auth.uid == userId
+                    // Prevent self-elevation: role and ownerId must not change.
+                    && request.resource.data.role == resource.data.role
+                    && request.resource.data.ownerId == resource.data.ownerId;
+
+      // Admin can update (or delete) their staff members' profiles.
+      allow update, delete: if isAdmin()
+                             && resource.data.ownerId == request.auth.uid;
+    }
+
+    // -------------------------------------------------------------------------
+    // organizations/{adminUid}/**
+    // -------------------------------------------------------------------------
+    // All app data: recipes, ingredients, production logs, reports, settings…
+    //
+    // A user (admin or staff) may read/write a document only when their
+    // ownerId matches the {adminUid} segment.  This ensures:
+    //   • Admins can only touch their own workspace.
+    //   • Staff can only touch their admin's workspace.
+    //   • No cross-tenant access is possible.
+
+    match /organizations/{adminUid}/{document=**} {
+
+      allow read: if sameOrg(adminUid);
+
+      // Write allowed only when:
+      //  1. Caller belongs to the same org.
+      //  2. The document being written carries ownerId == adminUid (prevents
+      //     a rogue client from stamping a different ownerId onto a doc).
+      allow write: if sameOrg(adminUid)
+                   && request.resource.data.ownerId == adminUid;
+    }
+  }
+}
