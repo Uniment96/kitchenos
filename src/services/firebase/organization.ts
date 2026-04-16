@@ -29,7 +29,7 @@ import {
   type QueryConstraint,
   type WithFieldValue,
 } from 'firebase/firestore';
-import { db } from './config';
+import { getFirebase } from './config';
 
 // ---------------------------------------------------------------------------
 // Path helpers
@@ -37,11 +37,13 @@ import { db } from './config';
 
 /** Returns the Firestore collection ref for organizations/{adminUid}/{col} */
 export function orgCollection(adminUid: string, col: string) {
+  const { db } = getFirebase();
   return collection(db, 'organizations', adminUid, col);
 }
 
 /** Returns a specific document ref inside an org collection */
 export function orgDoc(adminUid: string, col: string, docId: string) {
+  const { db } = getFirebase();
   return doc(db, 'organizations', adminUid, col, docId);
 }
 

@@ -14,7 +14,8 @@ import { COLORS, Spacing, FontSize, Radius, Shadow } from '@/constants/theme';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, loading } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+  const login = useAuthStore((s) => s.login);
   const showToast = useUIStore((s) => s.showToast);
 
   const handleLogin = async () => {
@@ -22,11 +23,15 @@ export default function LoginScreen() {
       showToast('Please enter email and password', 'warning');
       return;
     }
+    setLoading(true);
     try {
-      await login(email.trim().toLowerCase(), password);
+      const profile = await login(email.trim().toLowerCase(), password);
+      router.replace(profile.role === 'admin' ? '/(admin)' : '/(staff)');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Login failed';
       showToast(msg, 'error');
+    } finally {
+      setLoading(false);
     }
   };
 

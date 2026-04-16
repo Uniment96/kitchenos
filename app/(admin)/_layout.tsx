@@ -50,9 +50,9 @@ export default function AdminLayout() {
         }}
       />
       {/* Hidden screens (modals/detail) */}
-      <Tabs.Screen name="add-recipe" options={{ href: false }} />
-      <Tabs.Screen name="add-staff" options={{ href: false }} />
-      <Tabs.Screen name="recipe/[id]" options={{ href: false }} />
+      <Tabs.Screen name="add-recipe" options={{ href: null }} />
+      <Tabs.Screen name="add-staff" options={{ href: null }} />
+      <Tabs.Screen name="recipe/[id]" options={{ href: null }} />
     </Tabs>
   );
 }

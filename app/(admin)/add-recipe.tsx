@@ -32,7 +32,7 @@ export default function AddRecipeScreen() {
   const [ingQty, setIngQty] = useState('');
 
   const handleAddIngredient = () => {
-    if (!selectedIng || !ingQty) return;
+    if (!selectedIng || !ingQty || isNaN(parseFloat(ingQty))) return;
     const ing = ingredients.find((i) => i.id === selectedIng);
     if (!ing) return;
     setRecipeIngredients((prev) => [

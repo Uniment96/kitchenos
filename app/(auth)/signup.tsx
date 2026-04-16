@@ -16,8 +16,9 @@ export default function SignupScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const { register, loading } = useAuthStore();
+  const register = useAuthStore((s) => s.register);
   const showToast = useUIStore((s) => s.showToast);
+  const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
     if (!displayName.trim() || !email.trim() || !password.trim()) {
@@ -29,11 +30,15 @@ export default function SignupScreen() {
     if (password.length < 6) {
       showToast('Password must be at least 6 characters', 'warning'); return;
     }
+    setLoading(true);
     try {
       await register(email.trim().toLowerCase(), password, displayName.trim());
+      router.replace('/(admin)');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Sign up failed';
       showToast(msg, 'error');
+    } finally {
+      setLoading(false);
     }
   };
 

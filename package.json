@@ -5,7 +5,22 @@
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
-    "ios": "expo start --ios"
+    "ios": "expo start --ios",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "testMatch": [
+      "**/__tests__/**/*.test.ts"
+    ],
+    "transformIgnorePatterns": [
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|zustand)"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "^react-native-uuid$": "<rootDir>/src/__mocks__/react-native-uuid.ts"
+    }
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -33,7 +48,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
+    "@types/jest": "^29.5.14",
     "@types/react": "~19.1.10",
+    "jest-expo": "~54.0.0",
     "typescript": "~5.9.2"
   }
 }

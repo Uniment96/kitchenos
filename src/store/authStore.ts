@@ -10,8 +10,8 @@ interface AuthState {
   loading: boolean;
   error: string | null;
 
-  register: (email: string, password: string, displayName?: string) => Promise<void>;
-  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, displayName?: string) => Promise<UserProfile>;
+  login: (email: string, password: string) => Promise<UserProfile>;
   logout: () => Promise<void>;
   setProfile: (profile: UserProfile | null) => void;
   /** Call once at app boot — restores cached session then wires Firebase listener */
@@ -39,6 +39,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const profile = await signUpAdmin(email, password, displayName);
       set({ profile, loading: false });
       await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(profile));
+      return profile;
     } catch (err: unknown) {
       set({ error: errorMessage(err), loading: false });
       throw err;
@@ -51,6 +52,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const profile = await signIn(email, password);
       set({ profile, loading: false });
       await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(profile));
+      return profile;
     } catch (err: unknown) {
       set({ error: errorMessage(err), loading: false });
       throw err;

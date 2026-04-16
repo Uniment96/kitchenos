@@ -38,7 +38,7 @@ export default function SettingsScreen() {
 
         {/* Info rows */}
         <View style={styles.section}>
-          <InfoRow label="Workspace ID" value={profile?.ownerId?.slice(0, 12) + '...' ?? '—'} />
+          <InfoRow label="Workspace ID" value={(profile?.ownerId?.slice(0, 12) ?? '—') + '...'} />
           <InfoRow label="Role" value="Admin" />
         </View>
 

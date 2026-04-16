@@ -29,7 +29,7 @@ export default function StaffLayout() {
         }}
       />
       {/* Hidden screens */}
-      <Tabs.Screen name="recipe/[id]" options={{ href: false }} />
+      <Tabs.Screen name="recipe/[id]" options={{ href: null }} />
     </Tabs>
   );
 }

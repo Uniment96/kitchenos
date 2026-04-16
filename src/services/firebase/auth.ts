@@ -11,15 +11,15 @@ import {
   getDoc,
   serverTimestamp,
 } from 'firebase/firestore';
-import { auth, db } from './config';
+import { getFirebase } from './config';
 import type { UserProfile } from '../../types/auth';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Fetch a user profile document from users/{uid}. Returns null if missing. */
 export async function fetchUserProfile(uid: string): Promise<UserProfile | null> {
+  const { db } = getFirebase();
   const snap = await getDoc(doc(db, 'users', uid));
   if (!snap.exists()) return null;
   const data = snap.data();
@@ -35,19 +35,15 @@ export async function fetchUserProfile(uid: string): Promise<UserProfile | null>
 }
 
 // ---------------------------------------------------------------------------
-// Sign-up — always creates an Admin account
+// Sign-up
 // ---------------------------------------------------------------------------
 
-/**
- * Register a new Admin.
- * Creates a Firebase Auth user then writes users/{uid} with:
- *   role: "admin", ownerId: uid (admin owns their own workspace)
- */
 export async function signUpAdmin(
   email: string,
   password: string,
   displayName?: string
 ): Promise<UserProfile> {
+  const { auth, db } = getFirebase();
   const credential = await createUserWithEmailAndPassword(auth, email, password);
   const { uid } = credential.user;
 
@@ -55,7 +51,7 @@ export async function signUpAdmin(
     email,
     displayName: displayName ?? '',
     role: 'admin',
-    ownerId: uid, // Admin IS the owner
+    ownerId: uid,
     createdAt: serverTimestamp(),
   };
 
@@ -75,14 +71,11 @@ export async function signUpAdmin(
 // Sign-in
 // ---------------------------------------------------------------------------
 
-/**
- * Sign in with email + password, then load and return the UserProfile.
- * Works for both Admins and Staff.
- */
 export async function signIn(
   email: string,
   password: string
 ): Promise<UserProfile> {
+  const { auth } = getFirebase();
   const credential = await signInWithEmailAndPassword(auth, email, password);
   const profile = await fetchUserProfile(credential.user.uid);
   if (!profile) {
@@ -96,6 +89,7 @@ export async function signIn(
 // ---------------------------------------------------------------------------
 
 export async function signOut(): Promise<void> {
+  const { auth } = getFirebase();
   await firebaseSignOut(auth);
 }
 
@@ -103,14 +97,10 @@ export async function signOut(): Promise<void> {
 // Auth state observer
 // ---------------------------------------------------------------------------
 
-/**
- * Subscribe to Firebase auth state changes.
- * Loads the UserProfile on sign-in; passes null on sign-out.
- * Returns the unsubscribe function.
- */
 export function onAuthChanged(
   callback: (profile: UserProfile | null) => void
 ): () => void {
+  const { auth } = getFirebase();
   return onAuthStateChanged(auth, async (user: User | null) => {
     if (!user) {
       callback(null);
